@@ -1,0 +1,25 @@
+{
+    "name": "voip",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/main.js testfile.lv",
+        "dev": "npm run build && npm run start"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.24.0",
+    "dependencies": {
+        "dbus-next": "^0.10.2",
+        "dotenv": "^17.2.3",
+        "koffi": "^3.2.1"
+    },
+    "devDependencies": {
+        "@types/node": "^25.0.2",
+        "typescript": "^5.9.3"
+    }
+}
