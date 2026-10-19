@@ -33,18 +33,25 @@ declare global {
         kind: 'const' | 'var';
     };
 
+    type FunctionDeclaration = {
+        type: 'FunctionDeclaration';
+        id: Identifier;
+        init: FunctionExpression;
+    };
+
     type ExpressionStatement = {
         type: 'ExpressionStatement';
         expression: Expression;
     };
 
     type Statement =
-        BodyStatement       | 
-        VariableDeclaration | 
-        IfStatement         | 
-        WhileStatement      | 
-        ExpressionStatement | 
-        ReturnStatement;
+        | BodyStatement      
+        | VariableDeclaration
+        | IfStatement        
+        | WhileStatement     
+        | ExpressionStatement
+        | FunctionDeclaration
+        | ReturnStatement;
 };
 
 const parseBodyStatement = (tokenStream: LexerTokenStream): BodyStatement => {
@@ -124,13 +131,35 @@ const parseReturnStatement = (tokenStream: LexerTokenStream): ReturnStatement =>
 
     tokenStream.consume('SEMICOLON');
     return statement as ReturnStatement;
-}
+};
+
+const parseFunctionStatement = (tokenStream: LexerTokenStream): FunctionDeclaration => {
+    tokenStream.consume('FN');
+    const name = tokenStream.consume('IDENT');
+    tokenStream.consume('EQ');
+
+    const init = parseExpression(tokenStream);
+    if (init.type !== 'FunctionExpression')
+        throw new Error(`Parse error: cannot assign an expression of type ${ init.type } to a FunctionDeclaration`);
+
+    tokenStream.consume('SEMICOLON');
+    return {
+        type: 'FunctionDeclaration',
+        id: {
+            type: 'Identifier',
+            name: name.value
+        },
+        init
+    } satisfies FunctionDeclaration;
+};
 
 export const parseStatement = (tokenStream: LexerTokenStream): Statement => {
     switch(tokenStream.current?.type) {
         case 'VAR':
         case 'CONST':
             return parseVariableDeclaration(tokenStream);
+        case 'FN':
+            return parseFunctionStatement(tokenStream);
         case 'WHILE':
             return parseWhileStatement(tokenStream);
         case 'IF':
@@ -147,4 +176,4 @@ export const parseStatement = (tokenStream: LexerTokenStream): Statement => {
                 expression
             } satisfies ExpressionStatement;
     };
-}
+};

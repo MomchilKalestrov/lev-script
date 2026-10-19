@@ -1,6 +1,12 @@
 import { parseStatement } from './statements.ts';
 
 declare global {
+    type AssignmentExpression = {
+        type: 'AssignmentExpression';
+        id: Identifier | MemberExpression | IndexExpression;
+        value: Expression;
+    }
+
     type IndexExpression = {
         type: 'IndexExpression';
         object: Expression;
@@ -23,7 +29,7 @@ declare global {
     type MemberExpression = {
         type: 'MemberExpression';
         object: Expression;
-        property: string;
+        property: Identifier;
     };
 
     type UnaryExpression = {
@@ -43,19 +49,20 @@ declare global {
         type: 'FunctionExpression';
         arguments: TypedIdentifier[];
         body: Statement;
-        returns: string;
+        returns: Identifier;
     };
 
-    type Expression =
-        IndexExpression     |
-        TernaryExpression   |
-        FunctionExpression  |
-        BinaryExpression    |
-        UnaryExpression     |
-        CallExpression      |
-        MemberExpression    |
-        Identifier          |
-        Literal;
+    type Expression = 
+        | AssignmentExpression 
+        | IndexExpression      
+        | TernaryExpression    
+        | FunctionExpression   
+        | BinaryExpression     
+        | UnaryExpression      
+        | CallExpression       
+        | MemberExpression     
+        | Identifier           
+        | Literal;
 }
 
 const parseFunctionExpression = (tokenStream: LexerTokenStream): FunctionExpression => {
@@ -90,7 +97,10 @@ const parseFunctionExpression = (tokenStream: LexerTokenStream): FunctionExpress
         type: 'FunctionExpression',
         arguments: args,
         body,
-        returns
+        returns: {
+            type: 'Identifier',
+            name: returns
+        }
     } satisfies FunctionExpression;
 }
 
@@ -163,7 +173,10 @@ const parseMemberExpression = (tokenStream: LexerTokenStream, object: Expression
     return {
         type: 'MemberExpression',
         object,
-        property
+        property: {
+            type: 'Identifier',
+            name: property
+        }
     } satisfies MemberExpression;
 };
 
@@ -221,7 +234,7 @@ const precedenceTable: Record<string, number> = {
     '<':  7, '>': 7, '<=': 7, '>=': 7,
     '<<': 8, '>>': 8,
     '+':  9, '-': 9,
-    '*':  10, '/': 10, '%': 10,
+    '*':  10, '/': 10, '%': 10
 };
 
 export const parseExpression = (tokenStream: LexerTokenStream, minPrecedence: number = 0): Expression => {
@@ -229,6 +242,20 @@ export const parseExpression = (tokenStream: LexerTokenStream, minPrecedence: nu
 
     loop: while (true) {
         switch (tokenStream.current?.type) {
+            case 'EQ':
+                if (
+                    left.type !== 'Identifier' &&
+                    left.type !== 'MemberExpression' &&
+                    left.type !== 'IndexExpression'
+                )
+                    throw new Error(`Cannot assing a value to a ${ left.type }.`);
+                tokenStream.consume('EQ');
+
+                left = {
+                    type: 'AssignmentExpression',
+                    id: left,
+                    value: parseExpression(tokenStream)
+                } satisfies AssignmentExpression;
             case 'PAREN_L':
                 left = parseCallExpression(tokenStream, left);
                 break;

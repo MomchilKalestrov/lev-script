@@ -26,11 +26,13 @@ export const tokens = {
     IF: 'if',
     ELSE: 'else',
     WHILE: 'while',
+
     VAR: 'var',
     CONST: 'const',
-    REST: '...',
+    FN: 'fn',
+    
     RET: 'return',
-    ARROW: '->',
+    ARROW: '=>',
     EQ: '=',
     TRUE: 'true',
     FALSE: 'false',

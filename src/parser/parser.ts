@@ -19,7 +19,7 @@ declare global {
     }
 };
 
-export const parse = (tokenStream: LexerTokenStream) => {
+export const parse = (tokenStream: LexerTokenStream): Statement[] => {
     const statements: Statement[] = [];
     
     while (tokenStream.current?.type !== 'EOF')
