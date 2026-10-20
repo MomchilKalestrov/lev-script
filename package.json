@@ -1,5 +1,5 @@
 {
-    "name": "voip",
+    "name": "lev-script",
     "version": "1.0.0",
     "description": "",
     "main": "dist/index.js",
@@ -7,16 +7,14 @@
     "scripts": {
         "build": "tsc",
         "start": "node dist/main.js testfile.lv",
-        "dev": "npm run build && npm run start"
+        "dev": "npm run build && npm run start",
+        "scriptc": "scriptc run src/main.ts"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "packageManager": "pnpm@10.24.0",
     "dependencies": {
-        "dbus-next": "^0.10.2",
-        "dotenv": "^17.2.3",
-        "koffi": "^3.2.1"
+        "scriptc": "^0.3.6"
     },
     "devDependencies": {
         "@types/node": "^25.0.2",

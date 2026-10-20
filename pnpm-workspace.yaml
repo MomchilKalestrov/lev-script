@@ -1,6 +1,2 @@
-onlyBuiltDependencies:
-  - alsa
-  - koffi
-  - naudiodon2
-  - segfault-handler
-  - usocket
+allowBuilds:
+  scriptc: true
