@@ -26,7 +26,8 @@ export const tokens = {
     IF: 'if',
     ELSE: 'else',
     WHILE: 'while',
-
+    
+    TYPE: 'type',
     VAR: 'var',
     CONST: 'const',
     FN: 'fn',
@@ -36,8 +37,8 @@ export const tokens = {
     EQ: '=',
     TRUE: 'true',
     FALSE: 'false',
+    
     QUESTION: '?',
-
     COLON: ':',
     SEMICOLON: ';',
     DOT: '.',

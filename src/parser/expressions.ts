@@ -256,6 +256,7 @@ export const parseExpression = (tokenStream: LexerTokenStream, minPrecedence: nu
                     id: left,
                     value: parseExpression(tokenStream)
                 } satisfies AssignmentExpression;
+                break;
             case 'PAREN_L':
                 left = parseCallExpression(tokenStream, left);
                 break;

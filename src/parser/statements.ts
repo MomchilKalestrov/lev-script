@@ -29,7 +29,7 @@ declare global {
     type VariableDeclaration = {
         type: 'VariableDeclaration';
         id: TypedIdentifier;
-        init: Expression | null;
+        init: Expression;
         kind: 'const' | 'var';
     };
 
@@ -44,7 +44,14 @@ declare global {
         expression: Expression;
     };
 
+    type TypeDeclaration = {
+        type: 'TypeDeclaration';
+        id: Identifier;
+        fields: (FunctionDeclaration | VariableDeclaration)[];
+    };
+
     type Statement =
+        | TypeDeclaration
         | BodyStatement      
         | VariableDeclaration
         | IfStatement        
@@ -75,24 +82,21 @@ const parseVariableDeclaration = (tokenStream: LexerTokenStream): VariableDeclar
     tokenStream.consume('COLON');
     const type = tokenStream.consume('IDENT');
 
-    const decl: VariableDeclaration = {
+    const decl: Partial<VariableDeclaration> = {
         type: 'VariableDeclaration',
         id: {
             type: 'TypedIdentifier',
             name: name.value,
             variableType: type.value
         },
-        init: null,
         kind: kind.value as VariableDeclaration[ 'kind' ]
     };
 
-    if (tokenStream.current?.type === 'EQ') {
-        tokenStream.consume('EQ');
-        decl.init = parseExpression(tokenStream);
-    };
+    tokenStream.consume('EQ');
+    decl.init = parseExpression(tokenStream);
 
     tokenStream.consume('SEMICOLON');
-    return decl;
+    return decl as VariableDeclaration;
 }
 
 const parseIfStatement = (tokenStream: LexerTokenStream): IfStatement => {
@@ -133,7 +137,7 @@ const parseReturnStatement = (tokenStream: LexerTokenStream): ReturnStatement =>
     return statement as ReturnStatement;
 };
 
-const parseFunctionStatement = (tokenStream: LexerTokenStream): FunctionDeclaration => {
+const parseFunctionDeclaration = (tokenStream: LexerTokenStream): FunctionDeclaration => {
     tokenStream.consume('FN');
     const name = tokenStream.consume('IDENT');
     tokenStream.consume('EQ');
@@ -153,13 +157,41 @@ const parseFunctionStatement = (tokenStream: LexerTokenStream): FunctionDeclarat
     } satisfies FunctionDeclaration;
 };
 
+const parseTypeDeclaration = (tokenStream: LexerTokenStream): TypeDeclaration => {
+    tokenStream.consume('TYPE');
+    const name = tokenStream.consume('IDENT');
+    tokenStream.consume('EQ');
+    
+    tokenStream.consume('BRACKET_L');
+
+    let fields: TypeDeclaration[ 'fields' ] = [];
+
+    while (tokenStream.current?.type !== 'BRACKET_R') {
+        if (tokenStream.current?.type === 'FN')
+            fields.push(parseFunctionDeclaration(tokenStream));
+        else
+            fields.push(parseVariableDeclaration(tokenStream));
+    }
+    tokenStream.consume('BRACKET_R');
+    tokenStream.consume('SEMICOLON');
+    
+    return {
+        type: 'TypeDeclaration',
+        id: {
+            type: 'Identifier',
+            name: name.value
+        },
+        fields
+    };
+};
+
 export const parseStatement = (tokenStream: LexerTokenStream): Statement => {
     switch(tokenStream.current?.type) {
         case 'VAR':
         case 'CONST':
             return parseVariableDeclaration(tokenStream);
         case 'FN':
-            return parseFunctionStatement(tokenStream);
+            return parseFunctionDeclaration(tokenStream);
         case 'WHILE':
             return parseWhileStatement(tokenStream);
         case 'IF':
@@ -168,6 +200,8 @@ export const parseStatement = (tokenStream: LexerTokenStream): Statement => {
             return parseBodyStatement(tokenStream);
         case 'RET':
             return parseReturnStatement(tokenStream);
+        case 'TYPE':
+            return parseTypeDeclaration(tokenStream);
         default:
             const expression = parseExpression(tokenStream);
             tokenStream.consume('SEMICOLON');
