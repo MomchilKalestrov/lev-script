@@ -52,16 +52,23 @@ declare global {
         returns: Identifier;
     };
 
+    type NewExpression = {
+        type: 'NewExpression',
+        id: Identifier;
+        arguments: Expression[];
+    };
+
     type Expression = 
-        | AssignmentExpression 
-        | IndexExpression      
-        | TernaryExpression    
-        | FunctionExpression   
-        | BinaryExpression     
-        | UnaryExpression      
-        | CallExpression       
-        | MemberExpression     
-        | Identifier           
+        | AssignmentExpression
+        | IndexExpression
+        | TernaryExpression
+        | FunctionExpression
+        | BinaryExpression
+        | UnaryExpression
+        | CallExpression
+        | MemberExpression
+        | NewExpression
+        | Identifier
         | Literal;
 }
 
@@ -121,6 +128,29 @@ const parseLiteral = (tokenStream: LexerTokenStream) => {
     } satisfies Literal;
 };
 
+const parseNewExpression = (tokenStream: LexerTokenStream): NewExpression => {
+    tokenStream.consume('NEW');
+    const name = tokenStream.consume('IDENT');
+    const args: Expression[] = [];
+
+    tokenStream.consume('PAREN_L');
+    while (tokenStream.current?.type !== 'PAREN_R') {
+        args.push(parseExpression(tokenStream));
+        if (tokenStream.current?.type === 'COMMA')
+            tokenStream.dequeue();
+    };
+    tokenStream.consume('PAREN_R');
+
+    return {
+        type: 'NewExpression',
+        id: {
+            type: 'Identifier',
+            name: name.value
+        },
+        arguments: args
+    };
+};
+
 const parsePrimaryExpression = (tokenStream: LexerTokenStream): Expression => {
     let token: Token;
 
@@ -130,6 +160,8 @@ const parsePrimaryExpression = (tokenStream: LexerTokenStream): Expression => {
         case 'STRING':
         case 'NUMBER':
             return parseLiteral(tokenStream);
+        case 'NEW':
+            return parseNewExpression(tokenStream);
         case 'LG_NOT':
         case 'MINUS':
             token = tokenStream.dequeue()!;

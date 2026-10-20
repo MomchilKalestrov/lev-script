@@ -1,0 +1,227 @@
+# Lev-script
+
+Because the devils at the EU can take away my beloved currency, but they can never take way my love for it.
+
+This is my third attempt at making a programming language. My first one was in 9th grade - I failed miserably.
+Then in 11th grade I made a basic expression evaluator. But now, with the skills and knowledge (and a lot of
+asking Claude stupid questions), I have gotten much further.
+
+# Syntax
+
+## Variables
+
+Definition:
+```
+var <name>: <type> = <init>;
+```
+Variables **cannot** be defined without an initial value.
+
+Setting a value:
+```
+<name> = <value>;
+```
+The value must be the same as the `<type>` during definition.
+
+There isn't a way to initialize multiple variables at once
+```
+var <name>: <type>, <name>: <type>... # invalid!
+```
+
+## Function
+Definition:
+```
+fn <name> = (<name>: <type>): <return type> => {
+    # ...
+};
+```
+
+Functions can be overloaded by redefining the function with a different argument list:
+```
+fn <name> = (): <return type> => {
+    # ...
+};
+
+fn <name> = (<name>: <type>): <return type> => {
+    # ...
+};
+
+<name>(); # valid, calls the first function
+<name>(<argument>); # also valid, calls the second function
+```
+
+The parser *technically* allows for brackets to be omitted, similarly to arrow functions in TS,
+**but** the function **does not** return the value of the expression afterwards, a `return`
+statement is still required for that:
+```
+# technically valid, but **will not** return the produced value
+fn <name> = (): <return type> => <any statement or expression>;
+
+# also valid and **will** return the produced value
+fn <name> = (): <return type> => return <expression>;
+```
+This is considered an anti-pattern and should be avoided.
+
+Using an `AssingmentExpression` on an function (i.e. `func = <new function>`) is invalid.
+```
+fn func = (): void => {};
+
+func = (): boolean => { # invalid!
+    return true;
+};
+```
+
+## Conditionals
+
+As of now, only `if`/ `else` and `while` are supported:
+
+```
+if (a == b) {
+    # do something
+}
+```
+```
+var c: number = 0;
+while (c < 10) {
+    c = c + 1;
+}
+```
+
+Like with functions, brackets can be omitted:
+```
+var c: number = 0;
+while (c < 10) c = c + 1;
+```
+This is intended behaviour.
+
+## Objects
+
+There are **no** anonymous objects in lev-script.
+```
+# invalid!
+var obj: object = {
+    #...
+};
+```
+
+Objects are associated with a type:
+```
+type Person = {
+    var name: string = "Miroslav";
+
+    fn present = (): void => {
+        console.log("Hello, I am " + this.name);
+    };
+};
+```
+
+lev-script is **not** an OOP language. It's types do not have the required
+properties like for example inheritance, polymorphism and access modifiers,
+which notably makes all members of a type public.
+
+Properties and functions defined within a type can be accessed within an
+instance of the type via the `this` keyword. The keyword is a constant,
+meaning it cannot be reassigned, nor can new properties be added to it.
+
+### Operator 
+
+Note - the function names defined below are **not** final and may change in a later release.
+
+The following operators can be overloaded by including a function with the operator's name:
+
+|operator|name       |
+|--------|-----------|
+| `+`    | `__add__` |
+| `-`    | `__sub__` |
+| `*`    | `__mul__` |
+| `/`    | `__div__` |
+| `%`    | `__mod__` |
+| `==`   | `__eq__`  |
+| `!=`   | `__neq__` |
+| `<`    | `__lt__`  |
+| `>`    | `__gt__`  |
+| `<=`   | `__lte__` |
+| `>=`   | `__gte__` |
+| `<<`   | `__shl__` |
+| `>>`   | `__shr__` |
+| `&`    | `__band__`|
+| `\|`   | `__bor__` |
+| `^`    | `__xor__` |
+
+For example, to overload the `==` operator between two objects of type `Person`:
+```
+type Person = {
+    # ...
+    
+    fn __eq__ = (person: Person): boolean => {
+        return this.name == person.name;
+    };
+};
+
+# ...
+
+if (person1 == person2) { # valid, since `Person` has a function `__eq__` for other values of type `Person`
+    # ...
+}
+
+if (person1 == 1) { # invalid, since `Person` does not have a function `__eq__` for values of type `number`
+    # ...
+}
+```
+
+The following operators require a function **without** any arguments:
+
+|operator|name       |
+|--------|-----------|
+| `!`    | `__not__` |
+| `-`    | `__neg__` |
+
+```
+type Person = {
+    # ...
+    
+    fn __not__ = (person: Person): boolean => {
+        return !this.name;
+    };
+};
+```
+
+While it is reasonable to expect certain types of values being returned (for example a call to `__eq__`
+returning a `boolean`), that is not mandatory. All operators can return any types of values.
+
+### Indexing
+
+Types can implement indexing via the special function `__index__` for getters and `__index_set__` for
+setters.
+
+`__index__` accepts only one argument - the index (the value between the square brackets). The function can be overloaded
+to accept different types of indexes, for example accepting strings *and* numbers.
+```
+type KeyVal = {
+    # ...
+    fn __index__ = (key: string): string => {
+        # ...
+    };
+    
+    fn __index__ = (key: number): string => {
+        # ...
+    };
+};
+
+console.log(keyval[ "key" ]);
+```
+
+`__index_set__` has the same first argument as `__index__`, but also a second argument. The second argument can also be overloaded.
+```
+type KeyVal = {
+    # ...
+    fn __index_set__ = (key: string, value: number): void => {
+        # ...
+    };
+    
+    fn __index_set__ = (key: string, value: string): void => {
+        # ...
+    };
+};
+
+keyval[ "key" ] = "value";
+```

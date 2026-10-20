@@ -1,5 +1,6 @@
-if (how != NOT && 10 == 10) {
-    var a: string = -1;
-}
+type Person = {
+    var name: string = "Miro";
+};
 
-console.log(1 * (1 + 2));
+var miro: Person = new Person();
+output("Hello, " + miro.name);

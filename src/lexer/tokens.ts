@@ -27,6 +27,7 @@ export const tokens = {
     ELSE: 'else',
     WHILE: 'while',
     
+    NEW: 'new',
     TYPE: 'type',
     VAR: 'var',
     CONST: 'const',
