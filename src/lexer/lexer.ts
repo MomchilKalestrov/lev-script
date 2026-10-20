@@ -1,5 +1,21 @@
 import { tokens } from './tokens.ts';
 
+declare global {
+    type LexerTokenStream = {
+        assert: (token: Token[ 'type' ]) => void;
+        consume: (...tokens: Token[ 'type' ][]) => Token;
+        dequeue: () => Token | undefined;
+        current: Token | undefined;
+        tokens: Token[];
+        at: number;
+    };
+
+    type Token = {
+        type: (keyof typeof tokens) | 'IDENT' | 'STRING' | 'NUMBER' | 'EOF';
+        value: string;
+    };
+};
+
 const IDENTITY_REGEX = /[A-Za-z0-9_]/;
 const NUMERIC_REGEX = /[0-9.]/;
 
@@ -70,11 +86,11 @@ export const tokenize = (string: string) => {
     let queueCounter = 0;
 
     const obj: LexerTokenStream = {
-        assert: tokenType => {
+        assert: (tokenType: Token[ 'type' ]) => {
             if (obj.current?.type !== tokenType)
                 throw new Error(`Expected token ${ tokenType }, but instead got ${ obj.current?.type }.`);
         },
-        consume: (...tokenTypes) => {
+        consume: (...tokenTypes: Token[ 'type' ][]) => {
             const token = obj.dequeue();
             if (!tokenTypes.includes(token?.type!))
                 throw new Error(`Expected token ${ tokenTypes.join(', ') }, but instead got ${ token?.type }.`);
