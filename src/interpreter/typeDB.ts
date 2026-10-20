@@ -32,7 +32,7 @@ export const instantiateType = (name: string, args: Value[]): ObjectValue => {
     const instance: Partial<ObjectValue> = {
         type: 'object',
         instanceof: { type: 'Identifier', name },
-        fields: new Map()
+        fields: new Map<string, Value>()
     };
     instance.this = instance as ObjectValue;
 
