@@ -1,10 +1,12 @@
 # Lev-script
 
-Because the devils at the EU can take away my beloved currency, but they can never take way my love for it.
+Because the devils at the EU can take away my beloved currency, but they can
+never take way my love for it.
 
-This is my third attempt at making a programming language. My first one was in 9th grade - I failed miserably.
-Then in 11th grade I made a basic expression evaluator. But now, with the skills and knowledge (and a lot of
-asking Claude stupid questions), I have gotten much further.
+This is my third attempt at making a programming language. My first one was in
+9th grade - I failed miserably. Then in 11th grade I made a basic expression
+evaluator. But now, with the skills and knowledge (and a lot of asking Claude
+stupid questions), I have gotten much further.
 
 # Syntax
 
@@ -35,7 +37,8 @@ fn <name> = (<name>: <type>): <return type> => {
 };
 ```
 
-Functions can be overloaded by redefining the function with a different argument list:
+Functions can be overloaded by redefining the function with a different
+argument list:
 ```
 fn <name> = (): <return type> => {
     # ...
@@ -49,9 +52,9 @@ fn <name> = (<name>: <type>): <return type> => {
 <name>(<argument>); # also valid, calls the second function
 ```
 
-The parser *technically* allows for brackets to be omitted, similarly to arrow functions in TS,
-**but** the function **does not** return the value of the expression afterwards, a `return`
-statement is still required for that:
+The parser *technically* allows for brackets to be omitted, similarly to arrow
+functions in TS, **but** the function **does not** return the value of the
+expression afterwards, a `return` statement is still required for that:
 ```
 # technically valid, but **will not** return the produced value
 fn <name> = (): <return type> => <any statement or expression>;
@@ -61,7 +64,8 @@ fn <name> = (): <return type> => return <expression>;
 ```
 This is considered an anti-pattern and should be avoided.
 
-Using an `AssingmentExpression` on an function (i.e. `func = <new function>`) is invalid.
+Using an `AssingmentExpression` on an function (i.e. `func = <new function>`)
+is invalid.
 ```
 fn func = (): void => {};
 
@@ -119,14 +123,19 @@ properties like for example inheritance, polymorphism and access modifiers,
 which notably makes all members of a type public.
 
 Properties and functions defined within a type can be accessed within an
-instance of the type via the `this` keyword. The keyword is a constant,
-meaning it cannot be reassigned, nor can new properties be added to it.
+instance of the type via the `this` keyword. The keyword is a constant, meaning
+it cannot be reassigned, nor can new properties be added to it.
+
+The `type` statement is top-level only, meaning it cannot included in, for
+example, a function body.
 
 ### Operator 
 
-Note - the function names defined below are **not** final and may change in a later release.
+Note - the function names defined below are **not** final and may change in a
+later release.
 
-The following operators can be overloaded by including a function with the operator's name:
+The following operators can be overloaded by including a function with the
+operator's name:
 
 |operator|name       |
 |--------|-----------|
@@ -147,7 +156,8 @@ The following operators can be overloaded by including a function with the opera
 | `\|`   | `__bor__` |
 | `^`    | `__xor__` |
 
-For example, to overload the `==` operator between two objects of type `Person`:
+For example, to overload the `==` operator between two objects of type
+`Person`:
 ```
 type Person = {
     # ...
@@ -159,12 +169,14 @@ type Person = {
 
 # ...
 
-if (person1 == person2) { # valid, since `Person` has a function `__eq__` for other values of type `Person`
-    # ...
+if (person1 == person2) {
+    # valid, since `Person` has a function `__eq__` for other values of type
+    #`Person`
 }
 
-if (person1 == 1) { # invalid, since `Person` does not have a function `__eq__` for values of type `number`
-    # ...
+if (person1 == 1) {
+    # invalid, since `Person` does not have a function `__eq__` for values of
+    # type `number`
 }
 ```
 
@@ -185,16 +197,18 @@ type Person = {
 };
 ```
 
-While it is reasonable to expect certain types of values being returned (for example a call to `__eq__`
-returning a `boolean`), that is not mandatory. All operators can return any types of values.
+While it is reasonable to expect certain types of values being returned (for
+example a call to `__eq__` returning a `boolean`), that is not mandatory. All
+operators can return any types of values.
 
 ### Indexing
 
-Types can implement indexing via the special function `__index__` for getters and `__index_set__` for
-setters.
+Types can implement indexing via the special function `__index__` for getters
+and `__index_set__` for setters.
 
-`__index__` accepts only one argument - the index (the value between the square brackets). The function can be overloaded
-to accept different types of indexes, for example accepting strings *and* numbers.
+`__index__` accepts only one argument - the index (the value between the
+square brackets). The function can be overloaded to accept different types of
+indexes, for example accepting strings *and* numbers.
 ```
 type KeyVal = {
     # ...
@@ -210,7 +224,8 @@ type KeyVal = {
 console.log(keyval[ "key" ]);
 ```
 
-`__index_set__` has the same first argument as `__index__`, but also a second argument. The second argument can also be overloaded.
+`__index_set__` has the same first argument as `__index__`, but also a second
+argument. The second argument can also be overloaded.
 ```
 type KeyVal = {
     # ...
@@ -225,3 +240,31 @@ type KeyVal = {
 
 keyval[ "key" ] = "value";
 ```
+
+## Importing other modules
+
+The `import` statement is available for importing other modules. When using an
+`import` statement, all the declaration in the module will be included into:
+
+```
+import "<path>";
+```
+
+For example:
+
+```
+# file1.lv
+fn add = (a: number, b: number): number => {
+    return a + b;
+};
+```
+
+```
+# file2.lv
+import "./file1.lv";
+
+console.log(add(1, 1));
+```
+
+Module paths are resolved relative to the path of the module with the `import`
+statement.
