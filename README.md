@@ -197,6 +197,8 @@ if (person1 == 1) {
     # type `number`
 }
 ```
+The left operand's operator overload is ran first. If there isn't an available
+operator overload, then the right's operator overload is ran.
 
 The following operators require a function **without** any arguments:
 
