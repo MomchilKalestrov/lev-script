@@ -8,7 +8,7 @@ export class Context {
     };
 
     public get(key: string): Value {
-        const value = this.map.get(key)?.value ?? this._parent?.get(key);
+        const value = this.map.get(key) ?? this._parent?.get(key);
         if (!value) throw new Error(`Runtime error: no identifier with the name ${ key } found`);
         return value;
     }
@@ -18,14 +18,14 @@ export class Context {
 
         if (!previous)
             return this.map.set(key, {
-                value,
+                ...value,
                 kind: 'fn'
             });
         
-        if (previous.kind !== 'fn' || previous.value.type !== 'function')
-            throw new Error(`Runtime error: ${ key } exists, but is ${ previous.value.type }`);
+        if (previous.kind !== 'fn' || previous.type !== 'function')
+            throw new Error(`Runtime error: ${ key } exists, but is ${ previous.type }`);
 
-        const hasDuplicates = previous.value.overloads.every(signature => {
+        const hasDuplicates = previous.overloads.every(signature => {
             !signature.arguments.every(
                 (arg, i) => arg.variableType === value.overloads[ 0 ].arguments[ i ].variableType
             )
@@ -33,7 +33,7 @@ export class Context {
 
         if (hasDuplicates) throw new Error('Runtime error: duplicate overload signatures found');
 
-        previous.value.overloads.push(value.overloads[ 0 ]);
+        previous.overloads.push(value.overloads[ 0 ]);
     }
 
     public set(key: string, value: Value) {
@@ -55,19 +55,19 @@ export class Context {
         
         // verifying the types
         const valueType = value.type === 'object' ? value.instanceof.name : value.type;
-        const originalType = original.value.type === 'object' ? original.value.instanceof : original.value.type;
+        const originalType = original.type === 'object' ? original.instanceof : original.type;
         
         if (valueType !== originalType)
             throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a variable of type ${ originalType }`);
 
         this.map.set(key, {
-            value,
+            ...value,
             kind: 'var' // if it's reassignable, it's a var
         });
     }
 
     public add(key: string, value: KindedValue) {
-        if (value.kind === 'fn') this._setFunction(key, value.value as FunctionValue);
+        if (value.kind === 'fn') this._setFunction(key, value as FunctionValue);
 
         if (this.map.get(key))
             throw new Error('Runtime error: redefinition of ' + key);

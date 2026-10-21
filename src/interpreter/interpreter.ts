@@ -7,9 +7,8 @@ import { tokenize } from '../lexer/lexer.ts';
 import { parse } from '../parser/parser.ts';
 
 declare global {
-    type KindedValue = {
+    type KindedValue = Value & {
         kind: 'fn' | 'const' | 'var';
-        value: Value;
     };
 
     type NumberValue = { type: 'number'; value: number; };
@@ -86,19 +85,19 @@ export const callValue = (func: Value, args: Expression[] | Value[], context: Co
     const signature = findOverloadSignature(func.overloads, evaluatedArguments);
     if (!signature) throw new Error('Runtime error: no suitable overload found');
 
+    
+
     const subContext = new Context(func.closure);
     signature.arguments.forEach((v, i) =>
         subContext.add(
             v.name,
             evaluatedArguments[ i ].type === 'function'
             ?   {
-                    value: {
-                        ...evaluatedArguments[ i ],
-                        overloads: [ ...evaluatedArguments[ i ].overloads ]
-                    },
-                    kind: 'fn'
+                    ...evaluatedArguments[ i ],
+                    kind: 'fn',
+                    overloads: [ ...evaluatedArguments[ i ].overloads ]
                 }
-            :   { value: evaluatedArguments[ i ], kind: 'var' }
+            :   { ...evaluatedArguments[ i ], kind: 'var' }
         )
     );
 
@@ -120,10 +119,10 @@ export const callObjectMember = (
     if (!func) throw new Error(`Runtime error: no member with the name ${ property } found`);
     
     context.map.set('this', {
-        value: object,
+        ...object,
         kind: 'const'
     });
-    const value = callValue(func.value, args, context);
+    const value = callValue(func, args, context);
     context.map.delete('this');
     
     return value;

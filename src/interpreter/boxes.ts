@@ -1,532 +1,188 @@
-const arg = (name: string, type: string): TypedIdentifier => ({
-    type: 'TypedIdentifier', name, variableType: type
+import { arg, internalizeValue, internalizeFunction } from '../lib/internalize';
+
+const stringBox = ({ value }: StringValue): Record<string, KindedValue> => ({
+    length: internalizeValue(value.length),
+    substring: internalizeFunction({
+        arguments: [ arg('start', 'number'), arg('end', 'number') ],
+        func: ([ { value: start }, { value: end } ]) =>
+            internalizeValue(value.substring(start, end))
+    }),
+    __add__: internalizeFunction([ {
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value + num.toString())
+    }, {
+        arguments: [ arg('bool', 'boolean') ],
+        func: ([ { value: bool } ]) =>
+            internalizeValue(value + bool.toString())
+    }, {
+        arguments: [ arg('str', 'string') ],
+        func: ([ { value: str } ]) =>
+            internalizeValue(value + str.toString())
+    } ]),
+    __eq__: internalizeFunction({
+        arguments: [ arg('str', 'string') ],
+        func: ([ { value: str } ]) =>
+            internalizeValue(value === str)
+    }),
+    __neq__: internalizeFunction({
+        arguments: [ arg('str', 'string') ],
+        func: ([ { value: str } ]) =>
+            internalizeValue(value !== str)
+    }),
+    __index__: internalizeFunction({
+        arguments: [ arg('index', 'number') ],
+        func: ([ { value: index } ]) =>
+            internalizeValue(value[ index ])
+    }),
+    __not__: internalizeFunction({
+        arguments: [],
+        func: () =>
+            internalizeValue(value.length !== 0)
+    })
+});
+
+const numberBox = ({ value }: NumberValue): Record<string, KindedValue> => ({
+    __add__: internalizeFunction([ {
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value + num)
+    }, {
+        arguments: [ arg('str', 'string') ],
+        func: ([ { value: str } ]) =>
+            internalizeValue(value + str)
+    } ] as const),
+    __sub__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value - num)
+    }),
+    __mul__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value * num)
+    }),
+    __div__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value / num)
+    }),
+    __mod__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value % num)
+    }),
+    __eq__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value === num)
+    }),
+    __neq__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value !== num)
+    }),
+    __lt__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value < num)
+    }),
+    __gt__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value > num)
+    }),
+    __lte__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value <= num)
+    }),
+    __gte__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value >= num)
+    }),
+    __shl__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value << num)
+    }),
+    __shr__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value >> num)
+    }),
+    __band__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value & num)
+    }),
+    __bor__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value | num)
+    }),
+    __xor__: internalizeFunction({
+        arguments: [ arg('num', 'number') ],
+        func: ([ { value: num } ]) =>
+            internalizeValue(value ^ num)
+    }),
+    __not__: internalizeFunction({
+        arguments: [],
+        func: () =>
+            internalizeValue(value !== 0)
+    }),
+    __neg__: internalizeFunction({
+        arguments: [],
+        func: () =>
+            internalizeValue(-value)
+    })
+});
+
+const booleanBox = ({ value }: BooleanValue): Record<string, KindedValue> => ({
+    __eq__: internalizeFunction({
+        arguments: [ arg('bool', 'boolean') ],
+        func: ([ { value: bool } ]) =>
+            internalizeValue(value === bool)
+    }),
+    __neq__: internalizeFunction({
+        arguments: [ arg('bool', 'boolean') ],
+        func: ([ { value: bool } ]) =>
+            internalizeValue(value !== bool)
+    }),
+    __not__: internalizeFunction({
+        arguments: [],
+        func: () =>
+            internalizeValue(!value)
+    })
+});
+
+const arrayBox = ({ elements, variableType }: ArrayValue): Record<string, KindedValue> => ({
+    length: internalizeValue(elements.length),
+    __index__: internalizeFunction({
+        arguments: [ arg('index', 'number') ],
+        func: ([ { value: index } ]) =>
+            elements[ index ]
+    }),
+    __index_set__: internalizeFunction({
+        // Note: Только Господь знает what `variableType.name` is, but it'll
+        // always be usable so we just shut the TS compiler's mouth! :D
+        arguments: [ arg('index', 'number'), arg('value', variableType.name as 'string') ],
+        func: ([ { value: index }, value ]) =>
+            elements[ index ] = value
+    })
 });
 
 export const box = (value: Value): Record<string, KindedValue> => {
     switch (value.type) {
         case 'string':
-            return {
-                length: {
-                    kind: 'const',
-                    value: {
-                        type: 'number',
-                        value: value.value.length
-                    }
-                },
-                substring: {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('start', 'number'), arg('end', 'number') ],
-                            func: args => {
-                                const start = args[ 0 ] as NumberValue;
-                                const end = args[ 1 ] as NumberValue;
-
-                                return {
-                                    type: 'string',
-                                    value: value.value.substring(start.value, end.value)
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__add__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [
-                            {
-                                arguments: [ arg('num', 'number') ],
-                                func: args => {
-                                    const num = args[ 0 ] as NumberValue;
-
-                                    return {
-                                        type: 'string',
-                                        value: value.value + num.value.toString()
-                                    };
-                                }
-                            },
-                            {
-                                arguments: [ arg('bool', 'boolean') ],
-                                func: args => {
-                                    const bool = args[ 0 ] as BooleanValue;
-
-                                    return {
-                                        type: 'string',
-                                        value: value.value + bool.value.toString()
-                                    };
-                                }
-                            },
-                            {
-                                arguments: [ arg('str', 'string') ],
-                                func: args => {
-                                    const str = args[ 0 ] as StringValue;
-
-                                    return {
-                                        type: 'string',
-                                        value: value.value + str.value
-                                    };
-                                }
-                            }
-                        ]
-                    }
-                },
-                '__eq__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('str', 'string') ],
-                            func: args => {
-                                const str = args[ 0 ] as StringValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value === str.value
-                                }
-                            }
-                        } ]
-                    }
-                },
-                '__neq__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('str', 'string') ],
-                            func: args => {
-                                const str = args[ 0 ] as StringValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value !== str.value
-                                }
-                            }
-                        } ]
-                    }
-                },
-                '__index__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('index', 'number') ],
-                            func: args => {
-                                const index = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'string',
-                                    value: value.value[ index.value ]
-                                }
-                            }
-                        } ]
-                    }
-                },
-                '__not__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [],
-                            func: () => {
-                                return {
-                                    type: 'boolean',
-                                    value: value.value.length !== 0
-                                }
-                            }
-                        } ]
-                    }
-                }
-            };
+            return stringBox(value);
         case 'number':
-            return {
-                '__add__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [
-                            {
-                                arguments: [ arg('num', 'number') ],
-                                func: args => {
-                                    const num = args[ 0 ] as NumberValue;
-                                    return {
-                                        type: 'number',
-                                        value: value.value + num.value
-                                    };
-                                }
-                            },
-                            {
-                                arguments: [ arg('str', 'string') ],
-                                func: args => {
-                                    const str = args[ 0 ] as StringValue;
-                                    return {
-                                        type: 'string',
-                                        value: value.value + str.value
-                                    };
-                                }
-                            }
-                        ]
-                    }
-                },
-                '__sub__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value - num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__mul__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value * num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__div__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value / num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__mod__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value % num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__eq__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value === num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__neq__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value !== num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__lt__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value < num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__gt__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value > num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__lte__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value <= num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__gte__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value >= num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__shl__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value << num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__shr__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value >> num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__band__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value & num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__bor__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value | num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__xor__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('num', 'number') ],
-                            func: args => {
-                                const num = args[ 0 ] as NumberValue;
-                                return {
-                                    type: 'number',
-                                    value: value.value ^ num.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__not__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [],
-                            func: () => {
-                                return {
-                                    type: 'boolean',
-                                    value: value.value !== 0
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__neg__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [],
-                            func: () => {
-                                return {
-                                    type: 'number',
-                                    value: -value.value
-                                }
-                            }
-                        } ]
-                    }
-                }
-            };
+            return numberBox(value);
         case 'boolean':
-            return {
-                '__eq__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('bool', 'boolean') ],
-                            func: args => {
-                                const bool = args[ 0 ] as BooleanValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value === bool.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__neq__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('bool', 'boolean') ],
-                            func: args => {
-                                const bool = args[ 0 ] as BooleanValue;
-                                return {
-                                    type: 'boolean',
-                                    value: value.value !== bool.value
-                                };
-                            }
-                        } ]
-                    }
-                },
-                '__not__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [],
-                            func: () => {
-                                return {
-                                    type: 'boolean',
-                                    value: !value.value
-                                };
-                            }
-                        } ]
-                    }
-                }
-            };
+            return booleanBox(value);
         case 'array':
-            return {
-                length: {
-                    kind: 'const',
-                    value: {
-                        type: 'number',
-                        value: value.elements.length
-                    }
-                },
-                '__index__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('index', 'number') ],
-                            func: args => {
-                                const index = args[ 0 ] as NumberValue;
-                                return value.elements[ index.value ];
-                            }
-                        } ]
-                    }
-                },
-                '__index_set__': {
-                    kind: 'fn',
-                    value: {
-                        type: 'internal',
-                        overloads: [ {
-                            arguments: [ arg('index', 'number'), arg('value', value.variableType.name) ],
-                            func: args => {
-                                const index = args[ 0 ] as NumberValue;
-                                const v = args[ 1 ];
-
-                                value.elements[ index.value ] = v;
-
-                                return { type: 'null' };
-                            }
-                        } ]
-                    }
-                }
-            };
+            return arrayBox(value);
         case 'null':
         case 'internal':
         case 'function':
@@ -534,8 +190,6 @@ export const box = (value: Value): Record<string, KindedValue> => {
             throw new Error(`Runtime error: cannot box type ${ value.type }`);
     }
 };
-
-
 
 export const toObject = (value: Value): ObjectValue => {
     if (value.type === 'object') return value;
