@@ -50,6 +50,11 @@ declare global {
         fields: (FunctionDeclaration | VariableDeclaration)[];
     };
 
+    type ImportStatement = {
+        type: 'ImportStatement';
+        path: string;
+    };
+
     type Statement =
         | TypeDeclaration
         | BodyStatement      
@@ -58,6 +63,7 @@ declare global {
         | WhileStatement     
         | ExpressionStatement
         | FunctionDeclaration
+        | ImportStatement
         | ReturnStatement;
 };
 
@@ -185,8 +191,18 @@ const parseTypeDeclaration = (tokenStream: LexerTokenStream): TypeDeclaration =>
     };
 };
 
+const parseImportStatement = (tokenStream: LexerTokenStream): ImportStatement => {
+    tokenStream.consume('IMPORT');
+    const path = tokenStream.consume('STRING').value;
+    tokenStream.consume('SEMICOLON');
+
+    return { type: 'ImportStatement', path };
+};
+
 export const parseStatement = (tokenStream: LexerTokenStream): Statement => {
     switch(tokenStream.current?.type) {
+        case 'IMPORT':
+            return parseImportStatement(tokenStream);
         case 'VAR':
         case 'CONST':
             return parseVariableDeclaration(tokenStream);
