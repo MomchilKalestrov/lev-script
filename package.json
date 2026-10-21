@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "scripts": {
         "build": "esbuild src/main.ts --bundle --minify --outfile=./dist/interpreter.js --platform=node --banner:js=#!/bin/node && chmod +x dist/interpreter.js",
-        "test": "tsc && dist/main.js testfile.lv"
+        "test": "tsc && node dist/main.js testfile.lv"
     },
     "keywords": [],
     "author": "",
