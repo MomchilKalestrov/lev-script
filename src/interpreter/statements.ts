@@ -1,5 +1,6 @@
 import { Context } from './context.ts';
 import { evaluateExpression, evaluateFunctionExpression } from './expressions.ts';
+import { evaluate } from './interpreter.ts';
 import { hasType, newType } from './typeDB.ts';
 
 export const evaluateBodyStatement = (statement: BodyStatement, context: Context): Value | void => {
@@ -12,7 +13,10 @@ export const evaluateBodyStatement = (statement: BodyStatement, context: Context
 
 export const evaluateFunctionDeclaration = (statement: FunctionDeclaration, context: Context): void => {
     const func = evaluateFunctionExpression(statement.init, context);
-    context.add(statement.id.name, func);
+    context.add(statement.id.name, {
+        value: func,
+        kind: 'fn'
+    });
 };
 
 export const evaluateIfStatement = (statement: IfStatement, context: Context): Value | void => {
@@ -42,7 +46,10 @@ export const evaluateVariableDeclaration = (statement: VariableDeclaration, cont
     if (valueType !== statement.id.variableType)
         throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a variable of type ${ statement.id.variableType }`);
 
-    context.add(statement.id.name, value);
+    context.add(statement.id.name, {
+        value,
+        kind: statement.kind
+    });
 };
 
 export const evaluateWhileStatement = (statement: WhileStatement, context: Context): Value | void => {
@@ -64,6 +71,11 @@ export const evaluateTypeDeclaration = (statement: TypeDeclaration, context: Con
     });
 };
 
+export const evaluateImportStatement = (statement: ImportStatement, context: Context): void => {
+    const moduleContext = evaluate(statement.path);
+    moduleContext.map.forEach((value, key) => context.add(key, value));
+};
+
 export const evaluateStatement = (statement: Statement, context: Context, isTopLevel: boolean = false): Value | void => {
     switch (statement.type) {
         case 'BodyStatement':
@@ -80,6 +92,9 @@ export const evaluateStatement = (statement: Statement, context: Context, isTopL
             return evaluateVariableDeclaration(statement, context);
         case 'WhileStatement':
             return evaluateWhileStatement(statement, context);
+        case 'ImportStatement':
+            if (!isTopLevel) throw new Error('Runtime error: TypeDeclaration is a top-level statement only');
+            return evaluateImportStatement(statement, context);
         case 'TypeDeclaration':
             if (!isTopLevel) throw new Error('Runtime error: TypeDeclaration is a top-level statement only');
             return evaluateTypeDeclaration(statement, context);

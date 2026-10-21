@@ -1,8 +1,17 @@
+import fs from 'node:fs';
+import { isAbsolute } from 'node:path';
 import { Context } from './context.ts';
 import { evaluateExpression } from './expressions.ts';
 import { evaluateStatement } from './statements.ts';
+import { tokenize } from '../lexer/lexer.ts';
+import { parse } from '../parser/parser.ts';
 
 declare global {
+    type KindedValue = {
+        kind: 'fn' | 'const' | 'var';
+        value: Value;
+    };
+
     type NumberValue = { type: 'number'; value: number; };
     type StringValue = { type: 'string'; value: string; };
     type BooleanValue = { type: 'boolean'; value: boolean; };
@@ -23,7 +32,7 @@ declare global {
     };
     type ObjectValue = {
         type: 'object';
-        fields: Map<string, Value>;
+        fields: Map<string, KindedValue>;
         this: ObjectValue;
         instanceof: Identifier;
     };
@@ -78,7 +87,20 @@ export const callValue = (func: Value, args: Expression[] | Value[], context: Co
     if (!signature) throw new Error('Runtime error: no suitable overload found');
 
     const subContext = new Context(func.closure);
-    signature.arguments.forEach((v, i) => subContext.add(v.name, evaluatedArguments[ i ]));
+    signature.arguments.forEach((v, i) =>
+        subContext.add(
+            v.name,
+            evaluatedArguments[ i ].type === 'function'
+            ?   {
+                    value: {
+                        ...evaluatedArguments[ i ],
+                        overloads: [ ...evaluatedArguments[ i ].overloads ]
+                    },
+                    kind: 'fn'
+                }
+            :   { value: evaluatedArguments[ i ], kind: 'var' }
+        )
+    );
 
     const returnValue = evaluateStatement(signature.body, subContext) ?? { type: 'null' };
     const key: keyof typeof returnValue = (returnValue.type === 'object' ? 'instanceof' : 'type') as any;
@@ -97,33 +119,32 @@ export const callObjectMember = (
     const func = object.fields.get(property);
     if (!func) throw new Error(`Runtime error: no member with the name ${ property } found`);
     
-    context.map.set('this', object);
-    const value = callValue(func, args, context);
+    context.map.set('this', {
+        value: object,
+        kind: 'const'
+    });
+    const value = callValue(func.value, args, context);
     context.map.delete('this');
     
     return value;
 };
 
-export const evaluate = (statements: Statement[]) => {
+const modulesMap: Map<string, Context> = new Map();
+
+export const evaluate = (path: string): Context => {
+    if (!isAbsolute(path))
+        throw new Error('Runtime error: `evaluate` expects an absolute path');
+    if (modulesMap.has(path)) return modulesMap.get(path)!;
+    
+    const code = fs.readFileSync(path).toString();
+    
+    const tokenStream = tokenize(code);
+    const ast = parse(tokenStream);
     const context = new Context();
 
-    context.add(
-        'output',
-        {
-            type: 'internal',
-            overloads: [ {
-                arguments: [ {
-                    type: 'TypedIdentifier',
-                    name: 'str',
-                    variableType: 'string'
-                } ],
-                func: (args) => {
-                    console.log((args[ 0 ] as StringValue).value);
-                    return { type: 'null' };
-                }
-            } ]
-        }
-    );
+    for (const statement of ast) evaluateStatement(statement, context, true);
 
-    for (const statement of statements) evaluateStatement(statement, context, true);
+    modulesMap.set(path, context);
+
+    return context;
 };

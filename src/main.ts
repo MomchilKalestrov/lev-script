@@ -1,7 +1,6 @@
 import fs from 'node:fs';
-import { tokenize } from './lexer/lexer.ts';
-import { parse } from './parser/parser.ts';
 import { evaluate } from './interpreter/interpreter.ts';
+import path from 'node:path';
 
 const [ node, main, script, ...args ] = process.argv;
 
@@ -18,19 +17,9 @@ if (args.includes('-h') || args.includes('--help')) {
     process.exit(0);
 };
 
-let code: string;
-try {
-    code = fs.readFileSync(script).toString();
-} catch {
+if (!fs.existsSync(script)) {
     printUsage();
     process.exit(1);
 };
 
-const tokenStream = tokenize(code);
-
-const ast = parse(tokenStream);
-const dumpAstArg = args.indexOf('--dump-ast');
-if (args.includes('--dump-ast'))
-    fs.writeFileSync(args[ dumpAstArg + 1 ] ?? 'ast.json', JSON.stringify(ast, null, '\t'));
-
-evaluate(ast);
+evaluate(path.resolve(script));

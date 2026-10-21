@@ -32,19 +32,25 @@ export const instantiateType = (name: string, args: Value[]): ObjectValue => {
     const instance: Partial<ObjectValue> = {
         type: 'object',
         instanceof: { type: 'Identifier', name },
-        fields: new Map<string, Value>()
+        fields: new Map<string, KindedValue>()
     };
     instance.this = instance as ObjectValue;
 
     instance.fields!.set('__ctor__', {
-        type: 'internal',
-        overloads: [ {
-            arguments: [],
-            func: () => ({ type: 'null' })
-        } ]
+        kind: 'fn',
+        value: {
+            type: 'internal',
+            overloads: [ {
+                arguments: [],
+                func: () => ({ type: 'null' })
+            } ]
+        }
     });
 
-    thisAsContext.map.set('this', instance as ObjectValue);
+    thisAsContext.map.set('this', {
+        value: instance as ObjectValue,
+        kind: 'const'
+    });
     type.fields.forEach(value => {
         if (value.type === 'FunctionDeclaration')
             evaluateFunctionDeclaration(value, thisAsContext);

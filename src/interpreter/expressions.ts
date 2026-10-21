@@ -11,12 +11,30 @@ export const evaluateAssignmentExpression = (expression: AssignmentExpression, c
             context.set(expression.id.name, value);
             break;
         case 'MemberExpression': {
-            const object = evaluateExpression(expression.id.object, context);
-            if (object.type !== 'object')
-                throw new Error(`Runtime error: trying to mutate a ${ object.type }\'s members`);
-            if (!object.fields.has(expression.id.property.name))
+            // code duplication with `src/interpreter/context.ts`
+            // I have to find a way to remove the duplication
+            const value = evaluateExpression(expression.id.object, context);
+            const box = toObject(value);
+
+            const field = box.fields.get(expression.id.property.name);
+
+            if (!field)
                 throw new Error(`Runtime error: no member with the name ${ expression.id.property.name } found`);
-            object.fields.set(expression.id.property.name, value);
+        
+            if (field.kind !== 'var')
+                throw new Error(`Runtime error: cannot reassign ${ field.kind }`);
+            
+            // verifying the types
+            const valueType = value.type === 'object' ? value.instanceof.name : value.type;
+            const originalType = field.value.type === 'object' ? field.value.instanceof : field.value.type;
+            
+            if (valueType !== originalType)
+                throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a property of type ${ originalType }`);
+
+            box.fields.set(expression.id.property.name, {
+                ...field,
+                value
+            });
         } break;
         case 'IndexExpression': {
             let object = evaluateExpression(expression.id.object, context);
@@ -103,7 +121,7 @@ export const evaluateMemberExpression = (expression: MemberExpression, context: 
     const value = object.fields.get(expression.property.name);
     if (!value) throw new Error(`Runtime error: no member with the name ${ expression.property.name } found`);
 
-    return value;
+    return value.value;
 };
 
 export const evaluateIdentifier = (expression: Identifier, context: Context): Value =>

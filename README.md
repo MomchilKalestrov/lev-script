@@ -37,8 +37,8 @@ fn <name> = (<name>: <type>): <return type> => {
 };
 ```
 
-Functions can be overloaded by redefining the function with a different
-argument list:
+Functions can be overloaded by redefining the function with a different argument
+list:
 ```
 fn <name> = (): <return type> => {
     # ...
@@ -58,7 +58,8 @@ expression afterwards, a `return` statement is still required for that:
 ```
 # technically valid, but **will not** return the produced value
 fn <name> = (): <return type> => <any statement or expression>;
-
+```
+```
 # also valid and **will** return the produced value
 fn <name> = (): <return type> => return <expression>;
 ```
@@ -67,11 +68,28 @@ This is considered an anti-pattern and should be avoided.
 Using an `AssingmentExpression` on an function (i.e. `func = <new function>`)
 is invalid.
 ```
-fn func = (): void => {};
+fn func = (): null => {};
 
 func = (): boolean => { # invalid!
     return true;
 };
+```
+
+Adding overloads to a function argument inside a call is local to that call. The
+new overloads are usable within it, but do not affect the original function
+outside of it:
+```
+fn func = (): null => {};
+
+fn modifyFunc = (f: function): boolean => {
+    fn f = (a: number): null => {};
+
+    f(); # valid
+    f(1); #valid
+};
+
+modifyFunc(func);
+func(1); # invalid
 ```
 
 ## Conditionals
@@ -112,7 +130,7 @@ Objects are associated with a type:
 type Person = {
     var name: string = "Miroslav";
 
-    fn present = (): void => {
+    fn present = (): null => {
         console.log("Hello, I am " + this.name);
     };
 };
@@ -229,11 +247,11 @@ argument. The second argument can also be overloaded.
 ```
 type KeyVal = {
     # ...
-    fn __index_set__ = (key: string, value: number): void => {
+    fn __index_set__ = (key: string, value: number): null => {
         # ...
     };
     
-    fn __index_set__ = (key: string, value: string): void => {
+    fn __index_set__ = (key: string, value: string): null => {
         # ...
     };
 };
