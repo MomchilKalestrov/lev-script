@@ -35,10 +35,9 @@ export const arg = <T extends primitives>(name: string, type: T): Arg<T> => ({
 });
 
 export const internalizeFunction = <T extends readonly Arg<primitives>[]>(funcs: InternalFunction<T>[] | InternalFunction<T>): KindedValue => ({
-    type: 'function',
+    type: 'internal',
     kind: 'fn',
     overloads: (Array.isArray(funcs) ? funcs : [ funcs ]) as any[],
-    closure: new Context()
 });
 
 export const internalizeValue = <T extends string | number | boolean>(a: T): KindedValue => ({
