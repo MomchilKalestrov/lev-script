@@ -1,3 +1,4 @@
+import { set } from '../lib/set.ts';
 import { toObject } from './boxes.ts';
 import { Context } from './context.ts';
 import { callObjectMember, callValue } from './interpreter.ts';
@@ -16,25 +17,7 @@ export const evaluateAssignmentExpression = (expression: AssignmentExpression, c
             const value = evaluateExpression(expression.id.object, context);
             const box = toObject(value);
 
-            const field = box.fields.get(expression.id.property.name);
-
-            if (!field)
-                throw new Error(`Runtime error: no member with the name ${ expression.id.property.name } found`);
-        
-            if (field.kind !== 'var')
-                throw new Error(`Runtime error: cannot reassign ${ field.kind }`);
-            
-            // verifying the types
-            const valueType = value.type === 'object' ? value.instanceof.name : value.type;
-            const originalType = field.type === 'object' ? field.instanceof.name : field.type;
-            
-            if (valueType !== originalType)
-                throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a property of type ${ originalType }`);
-
-            box.fields.set(expression.id.property.name, {
-                ...field,
-                ...value
-            });
+            set(box.fields, expression.id.property.name, value);
         } break;
         case 'IndexExpression': {
             let object = evaluateExpression(expression.id.object, context);

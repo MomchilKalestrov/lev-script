@@ -1,3 +1,5 @@
+import { set } from '../lib/set.ts';
+
 export class Context {
     private _parent: Context | undefined;
     
@@ -45,25 +47,8 @@ export class Context {
                 return void this._parent.set(key, value);
             else
                 throw new Error('Runtime error: cannot find ' + key);
-                
-        // code duplication with `src/interpreter/interpreter.ts`
-        // I have to find a way to remove the duplication
-        const original = this.map.get(key)!;
         
-        if (original.kind !== 'var')
-            throw new Error(`Runtime error: cannot reassign ${ original.kind }`);
-        
-        // verifying the types
-        const valueType = value.type === 'object' ? value.instanceof.name : value.type;
-        const originalType = original.type === 'object' ? original.instanceof.name : original.type;
-        
-        if (valueType !== originalType)
-            throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a variable of type ${ originalType }`);
-
-        this.map.set(key, {
-            ...value,
-            kind: 'var' // if it's reassignable, it's a var
-        });
+        set(this.map, key, value);
     }
 
     public add(key: string, value: KindedValue) {
