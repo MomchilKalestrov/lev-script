@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { Context } from './context';
 import { evaluate } from './interpreter';
 import { hasType, newType } from './typeDB';
@@ -72,8 +73,12 @@ export const evaluateTypeDeclaration = (statement: TypeDeclaration, context: Con
 };
 
 export const evaluateImportStatement = (statement: ImportStatement, context: Context): void => {
-    const moduleContext = evaluate(statement.path);
-    moduleContext.map.forEach((value, key) => context.add(key, value));
+    const moduleObj = context.get('module') as ObjectValue;
+    const modulePath = moduleObj.fields.get('path') as StringValue;
+    
+    const importPath = path.resolve(path.dirname(modulePath.value), statement.path);
+    const importContext = evaluate(importPath);
+    importContext.map.forEach((value, key) => context.add(key, value));
 };
 
 export const evaluateStatement = (statement: Statement, context: Context, isTopLevel: boolean = false): Value | void => {
