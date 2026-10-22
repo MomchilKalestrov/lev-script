@@ -38,17 +38,15 @@ export const instantiateType = (name: string, args: Value[]): ObjectValue => {
 
     instance.fields!.set('__ctor__', {
         kind: 'fn',
-        value: {
             type: 'internal',
             overloads: [ {
                 arguments: [],
                 func: () => ({ type: 'null' })
             } ]
-        }
     });
 
     thisAsContext.map.set('this', {
-        value: instance as ObjectValue,
+        ...instance as ObjectValue,
         kind: 'const'
     });
     type.fields.forEach(value => {

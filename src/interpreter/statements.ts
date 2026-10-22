@@ -14,7 +14,7 @@ export const evaluateBodyStatement = (statement: BodyStatement, context: Context
 export const evaluateFunctionDeclaration = (statement: FunctionDeclaration, context: Context): void => {
     const func = evaluateFunctionExpression(statement.init, context);
     context.add(statement.id.name, {
-        value: func,
+        ...func,
         kind: 'fn'
     });
 };
@@ -47,7 +47,7 @@ export const evaluateVariableDeclaration = (statement: VariableDeclaration, cont
         throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a variable of type ${ statement.id.variableType }`);
 
     context.add(statement.id.name, {
-        value,
+        ...value,
         kind: statement.kind
     });
 };
