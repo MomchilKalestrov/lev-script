@@ -1,3 +1,4 @@
+import { capitalize } from '../lib/capitalize';
 import { arg, internalizeFunction, internalizeValue } from '../lib/internalize';
 
 const twoArgFunctions = [
@@ -30,14 +31,14 @@ const singleArgFunctions = [
 ] as const;
 
 export default {
-    pi: internalizeValue(Math.PI),
-    e: internalizeValue(Math.E),
-    log: internalizeFunction({
+    Pi: internalizeValue(Math.PI),
+    E: internalizeValue(Math.E),
+    Log: internalizeFunction({
         arguments: [ arg('base', 'number'), arg('value', 'number') ],
         func: ([ { value: base }, { value } ]) =>
             internalizeValue(Math.log(value) / Math.log(base))
     }),
-    random: internalizeFunction([ {
+    Random: internalizeFunction([ {
         arguments: [ arg('min', 'number'), arg('max', 'number') ],
         func: ([ { value: min }, { value: max } ]) =>
             internalizeValue(Math.random() * (max - min) + min)
@@ -50,14 +51,14 @@ export default {
         func: () => internalizeValue(Math.random())
     } ]),
     ...Object.fromEntries(twoArgFunctions.map(key => [
-        key,
+        capitalize(key),
         internalizeFunction({
             arguments: [ arg('a', 'number'), arg('b', 'number') ],
             func: ([ { value: a }, { value: b } ]) => internalizeValue(Math[ key ](a, b))
         })
     ])),
     ...Object.fromEntries(singleArgFunctions.map(key => [
-        key,
+        capitalize(key),
         internalizeFunction({
             arguments: [ arg('value', 'number') ],
             func: ([ { value } ]) => internalizeValue(Math[ key ](value))

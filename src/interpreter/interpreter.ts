@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import { isAbsolute } from 'node:path';
+import core from '../library/core';
 import { Context } from './context';
 import { parse } from '../parser/parser';
 import { tokenize } from '../lexer/lexer';
 import { evaluateStatement } from './statements';
 import { evaluateExpression } from './expressions';
+import { internalizeValue } from '../lib/internalize';
 
 declare global {
     type KindedValue = Value & {
@@ -139,7 +141,19 @@ export const evaluate = (path: string): Context => {
     const ast = parse(tokenStream);
     const context = new Context();
 
+    core.forEach(([ key, object ]) => context.map.set(key, object));
+    context.map.set('Module', {
+        kind: 'const',
+        type: 'object',
+        fields: new Map([ [ 'Path', internalizeValue(path) ] ]),
+        this: {} as any,
+        instanceof: { type: 'Identifier', name: 'Module' }
+    })
+
     for (const statement of ast) evaluateStatement(statement, context, true);
+
+    context.map.delete('Module');
+    core.forEach(([ key ]) => context.map.delete(key));
 
     modulesMap.set(path, context);
 

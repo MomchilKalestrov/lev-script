@@ -73,8 +73,8 @@ export const evaluateTypeDeclaration = (statement: TypeDeclaration, context: Con
 };
 
 export const evaluateImportStatement = (statement: ImportStatement, context: Context): void => {
-    const moduleObj = context.get('module') as ObjectValue;
-    const modulePath = moduleObj.fields.get('path') as StringValue;
+    const moduleObj = context.get('Module') as ObjectValue;
+    const modulePath = moduleObj.fields.get('Path') as StringValue;
     
     const importPath = path.resolve(path.dirname(modulePath.value), statement.path);
     const importContext = evaluate(importPath);

@@ -1,12 +1,12 @@
 import { arg, internalizeFunction, internalizeValue } from '../lib/internalize';
 
 export default {
-    toNumber: internalizeFunction([ {
+    ToNumber: internalizeFunction([ {
         arguments: [ arg('str', 'string') ],
         func: ([ { value: str } ]) =>
             internalizeValue(Number(str))
     } ]),
-    toBoolean: internalizeFunction([ {
+    ToBoolean: internalizeFunction([ {
         arguments: [ arg('str', 'string') ],
         func: ([ { value: str } ]) =>
             internalizeValue(Boolean(str))
