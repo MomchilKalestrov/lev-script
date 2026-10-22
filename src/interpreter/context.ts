@@ -55,7 +55,7 @@ export class Context {
         
         // verifying the types
         const valueType = value.type === 'object' ? value.instanceof.name : value.type;
-        const originalType = original.type === 'object' ? original.instanceof : original.type;
+        const originalType = original.type === 'object' ? original.instanceof.name : original.type;
         
         if (valueType !== originalType)
             throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a variable of type ${ originalType }`);

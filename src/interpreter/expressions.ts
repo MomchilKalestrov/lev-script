@@ -26,14 +26,14 @@ export const evaluateAssignmentExpression = (expression: AssignmentExpression, c
             
             // verifying the types
             const valueType = value.type === 'object' ? value.instanceof.name : value.type;
-            const originalType = field.value.type === 'object' ? field.value.instanceof : field.value.type;
+            const originalType = field.type === 'object' ? field.instanceof.name : field.type;
             
             if (valueType !== originalType)
                 throw new Error(`Runtime error: cannot assign a value of type ${ valueType } to a property of type ${ originalType }`);
 
             box.fields.set(expression.id.property.name, {
                 ...field,
-                value
+                ...value
             });
         } break;
         case 'IndexExpression': {
@@ -121,7 +121,7 @@ export const evaluateMemberExpression = (expression: MemberExpression, context: 
     const value = object.fields.get(expression.property.name);
     if (!value) throw new Error(`Runtime error: no member with the name ${ expression.property.name } found`);
 
-    return value.value;
+    return value;
 };
 
 export const evaluateIdentifier = (expression: Identifier, context: Context): Value =>
