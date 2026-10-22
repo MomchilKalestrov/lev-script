@@ -85,8 +85,6 @@ export const callValue = (func: Value, args: Expression[] | Value[], context: Co
     const signature = findOverloadSignature(func.overloads, evaluatedArguments);
     if (!signature) throw new Error('Runtime error: no suitable overload found');
 
-    
-
     const subContext = new Context(func.closure);
     signature.arguments.forEach((v, i) =>
         subContext.add(
