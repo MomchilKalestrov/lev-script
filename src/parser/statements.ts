@@ -10,9 +10,7 @@ declare global {
 
     type WhileStatement = {
         type: 'WhileStatement';
-        init: Statement;
         condition: Expression;
-        update: Statement;
         body: Statement;
     };
 
@@ -123,7 +121,7 @@ const parseIfStatement = (tokenStream: LexerTokenStream): IfStatement => {
 
 const parseWhileStatement = (tokenStream: LexerTokenStream): WhileStatement => {
     tokenStream.consume('WHILE');
-    
+
     let statement: Partial<WhileStatement> = { type: 'WhileStatement' };
     statement.condition = parseExpression(tokenStream);
     statement.body = parseStatement(tokenStream);
@@ -135,9 +133,7 @@ const parseReturnStatement = (tokenStream: LexerTokenStream): ReturnStatement =>
     tokenStream.consume('RET');
 
     let statement: Partial<ReturnStatement> = { type: 'ReturnStatement' };
-
-    if (tokenStream.current?.type !== 'SEMICOLON')
-        statement.value = parseExpression(tokenStream);
+    statement.value = parseExpression(tokenStream);
 
     tokenStream.consume('SEMICOLON');
     return statement as ReturnStatement;
