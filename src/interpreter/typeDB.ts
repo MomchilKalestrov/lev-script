@@ -1,6 +1,6 @@
-import { Context } from './context.ts';
-import { callObjectMember } from './interpreter.ts';
-import { evaluateFunctionDeclaration, evaluateVariableDeclaration } from './statements.ts';
+import { Context } from './context';
+import { callObjectMember } from './interpreter';
+import { evaluateFunctionDeclaration, evaluateVariableDeclaration } from './statements';
 
 const PRIMITIVES = [ 'string', 'number', 'boolean', 'array', 'function', 'null' ];
 
@@ -38,11 +38,11 @@ export const instantiateType = (name: string, args: Value[]): ObjectValue => {
 
     instance.fields!.set('__ctor__', {
         kind: 'fn',
-            type: 'internal',
-            overloads: [ {
-                arguments: [],
-                func: () => ({ type: 'null' })
-            } ]
+        type: 'internal',
+        overloads: [ {
+            arguments: [],
+            func: () => ({ type: 'null' })
+        } ]
     });
 
     thisAsContext.map.set('this', {

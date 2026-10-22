@@ -1,4 +1,4 @@
-import { tokens } from './tokens.ts';
+import { tokens } from './tokens';
 
 declare global {
     type LexerTokenStream = {

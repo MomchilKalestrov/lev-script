@@ -1,6 +1,6 @@
 import fs from 'node:fs';
-import { evaluate } from './interpreter/interpreter.ts';
 import path from 'node:path';
+import { evaluate } from './interpreter/interpreter';
 
 const [ node, main, script, ...args ] = process.argv;
 

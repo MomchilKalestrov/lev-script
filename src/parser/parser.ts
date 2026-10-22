@@ -1,4 +1,4 @@
-import { parseStatement } from './statements.ts';
+import { parseStatement } from './statements';
 
 declare global {
     type Identifier = {

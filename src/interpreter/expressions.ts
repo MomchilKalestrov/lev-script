@@ -1,8 +1,8 @@
-import { set } from '../lib/set.ts';
-import { toObject } from './boxes.ts';
-import { Context } from './context.ts';
-import { callObjectMember, callValue } from './interpreter.ts';
-import { hasType, instantiateType } from './typeDB.ts';
+import { set } from '../lib/set';
+import { toObject } from './boxes';
+import { Context } from './context';
+import { hasType, instantiateType } from './typeDB';
+import { callObjectMember, callValue } from './interpreter';
 
 export const evaluateAssignmentExpression = (expression: AssignmentExpression, context: Context): Value => {
     const value = evaluateExpression(expression.value, context);

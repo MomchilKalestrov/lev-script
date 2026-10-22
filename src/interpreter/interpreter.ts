@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import { isAbsolute } from 'node:path';
-import { Context } from './context.ts';
-import { evaluateExpression } from './expressions.ts';
-import { evaluateStatement } from './statements.ts';
-import { tokenize } from '../lexer/lexer.ts';
-import { parse } from '../parser/parser.ts';
+import { Context } from './context';
+import { parse } from '../parser/parser';
+import { tokenize } from '../lexer/lexer';
+import { evaluateStatement } from './statements';
+import { evaluateExpression } from './expressions';
 
 declare global {
     type KindedValue = Value & {

@@ -1,7 +1,7 @@
-import { Context } from './context.ts';
-import { evaluateExpression, evaluateFunctionExpression } from './expressions.ts';
-import { evaluate } from './interpreter.ts';
-import { hasType, newType } from './typeDB.ts';
+import { Context } from './context';
+import { evaluate } from './interpreter';
+import { hasType, newType } from './typeDB';
+import { evaluateExpression, evaluateFunctionExpression } from './expressions';
 
 export const evaluateBodyStatement = (statement: BodyStatement, context: Context): Value | void => {
     const subContext = new Context(context);

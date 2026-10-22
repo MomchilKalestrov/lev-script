@@ -1,4 +1,4 @@
-import { parseExpression } from './expressions.ts';
+import { parseExpression } from './expressions';
 
 declare global {
     type IfStatement = {

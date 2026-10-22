@@ -1,4 +1,4 @@
-import { set } from '../lib/set.ts';
+import { set } from '../lib/set';
 
 export class Context {
     private _parent: Context | undefined;
