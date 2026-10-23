@@ -107,7 +107,9 @@ const parseIfStatement = (tokenStream: LexerTokenStream): IfStatement => {
     tokenStream.consume('IF');
     
     let statement: Partial<IfStatement> = { type: 'IfStatement' };
+    tokenStream.consume('PAREN_L');
     statement.condition = parseExpression(tokenStream);
+    tokenStream.consume('PAREN_R');
     statement.consequence = parseStatement(tokenStream);
 
     if (tokenStream.current?.type === 'ELSE') {
@@ -123,7 +125,9 @@ const parseWhileStatement = (tokenStream: LexerTokenStream): WhileStatement => {
     tokenStream.consume('WHILE');
 
     let statement: Partial<WhileStatement> = { type: 'WhileStatement' };
+    tokenStream.consume('PAREN_L');
     statement.condition = parseExpression(tokenStream);
+    tokenStream.consume('PAREN_R');
     statement.body = parseStatement(tokenStream);
 
     return statement as WhileStatement;
