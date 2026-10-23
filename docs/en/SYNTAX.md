@@ -3,25 +3,25 @@
 ## Variables
 
 Definition:
-```
+```lv
 var <name>: <type> = <init>;
 ```
 Variables **cannot** be defined without an initial value.
 
 Setting a value:
-```
+```lv
 <name> = <value>;
 ```
 The value must be the same as the `<type>` during definition.
 
 There isn't a way to initialize multiple variables at once:
-```
+```lv
 var <name>: <type>, <name>: <type>... # invalid!
 ```
 
 ## Function
 Definition:
-```
+```lv
 fn <name> = (<name>: <type>): <return type> => {
     # ...
 };
@@ -29,7 +29,7 @@ fn <name> = (<name>: <type>): <return type> => {
 
 Functions can be overloaded by redefining the function with a different argument
 list:
-```
+```lv
 fn <name> = (): <return type> => {
     # ...
 };
@@ -45,7 +45,7 @@ fn <name> = (<name>: <type>): <return type> => {
 The parser *technically* allows for brackets to be omitted, similarly to arrow
 functions in TS, **but** the function **does not** return the value of the
 expression afterwards, a `return` statement is still required for that:
-```
+```lv
 # technically valid, but **will not** return the produced value
 fn <name> = (): <return type> => <any statement or expression>;
 ```
@@ -57,7 +57,7 @@ This is considered an anti-pattern and should be avoided.
 
 Using an `AssingmentExpression` on an function (i.e. `func = <new function>`)
 is invalid.
-```
+```lv
 fn Func = (): null => {};
 
 Func = (): boolean => { # invalid!
@@ -68,7 +68,7 @@ Func = (): boolean => { # invalid!
 Adding overloads to a function argument inside a call is local to that call. The
 new overloads are usable within it, but do not affect the original function
 outside of it:
-```
+```lv
 fn Func = (): null => {};
 
 fn ModifyFunc = (F: function): boolean => {
@@ -86,12 +86,12 @@ Func(1); # invalid
 
 As of now, only `if`/ `else` and `while` are supported:
 
-```
+```lv
 if (a == b) {
     # do something
 }
 ```
-```
+```lv
 var c: number = 0;
 while (c < 10) {
     c = c + 1;
@@ -99,7 +99,7 @@ while (c < 10) {
 ```
 
 Like with functions, brackets can be omitted:
-```
+```lv
 var c: number = 0;
 while (c < 10) c = c + 1;
 ```
@@ -108,7 +108,7 @@ This is intended behaviour.
 ## Objects
 
 There are **no** anonymous objects in lev-script.
-```
+```lv
 # invalid!
 var obj: Object = {
     #...
@@ -116,7 +116,7 @@ var obj: Object = {
 ```
 
 Objects are associated with a type:
-```
+```lv
 type Person = {
     var name: string = "Miroslav";
 
@@ -165,7 +165,7 @@ operator's name:
 | `^`    | `__xor__` |
 
 For example, to overload the `==` operator between two objects of type `Person`:
-```
+```lv
 type Person = {
     # ...
     
@@ -196,7 +196,7 @@ The following operators require a function **without** any arguments:
 | `!`    | `__not__` |
 | `-`    | `__neg__` |
 
-```
+```lv
 type Person = {
     # ...
     
@@ -218,7 +218,7 @@ and `__index_set__` for setters.
 `__index__` accepts only one argument - the index (the value between the
 square brackets). The function can be overloaded to accept different types of
 indexes, for example accepting strings *and* numbers.
-```
+```lv
 type KeyVal = {
     # ...
     fn __index__ = (key: string): string => {
@@ -235,7 +235,7 @@ console.log(keyval[ "key" ]);
 
 `__index_set__` has the same first argument as `__index__`, but also a second
 argument. The second argument can also be overloaded.
-```
+```lv
 type KeyVal = {
     # ...
     fn __index_set__ = (key: string, value: number): null => {
@@ -255,20 +255,20 @@ keyval[ "key" ] = "value";
 The `import` statement is available for importing other modules. When using an
 `import` statement, all the declaration in the module will be included into:
 
-```
+```lv
 import "<path>";
 ```
 
 For example:
 
-```
+```lv
 # file1.lv
 fn Add = (a: number, b: number): number => {
     return a + b;
 };
 ```
 
-```
+```lv
 # file2.lv
 import "./file1.lv";
 
