@@ -1,30 +1,6 @@
-# Console
 
-## Functions
 
-### Log
 
-`(str: string): null` - Writes the value of `str` to `stdout`.
-
-### Error
-
-`(str: string): null` - Writes the value of `str` to `stderr`.
-
-### ReadLine
-
-`(): string` - Reads a line from `stdin`.
-
-# Parse
-
-## Functions
-
-### ToNumber
-
-`(str: string): number` - Returns the numeric value of `str`.
-
-### ToBoolean
-
-`(str: string): number` - Returns the boolean value of `str`.
 
 # Math
 
