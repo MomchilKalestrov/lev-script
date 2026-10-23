@@ -1,9 +1,10 @@
 import Console from './Console';
 import Math from './Math';
 import Parse from './Parse';
+import Array from './Array';
 
 export default Object.entries({
-    Console, Math, Parse
+    Console, Math, Parse, Array
 }).map(([ key, value ]) => [
     key,
     {
