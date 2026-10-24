@@ -1,4 +1,4 @@
-![Logo](https://gitlab.com/Momchil_Kalestrov/levscript/-/raw/master/docs/icon.png?ref_type=heads&inline=false)
+![Logo](https://gitlab.com/Momchil_Kalestrov/lev-script/-/raw/master/docs/logo.png?ref_type=heads)
 
 # Лев-скрипт
 
