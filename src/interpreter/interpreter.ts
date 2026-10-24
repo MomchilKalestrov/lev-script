@@ -148,7 +148,7 @@ export const evaluate = (path: string): Context => {
         fields: new Map([ [ 'Path', internalizeValue(path) ] ]),
         this: {} as any,
         instanceof: { type: 'Identifier', name: 'Module' }
-    })
+    });
 
     for (const statement of ast) evaluateStatement(statement, context, true);
 

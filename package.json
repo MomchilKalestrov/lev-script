@@ -5,7 +5,9 @@
     "main": "dist/index.js",
     "scripts": {
         "build": "node scripts/build.js",
-        "test": "tsc && node dist/main.js testfile.lv"
+        "test": "tsc && node dist/main.js testfile.lv",
+        "repl": "tsc && node dist/main.js --repl",
+        "lv": "tsc && node dist/main.js"
     },
     "keywords": [],
     "author": "",
