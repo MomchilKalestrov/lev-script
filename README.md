@@ -2,8 +2,7 @@
 
 # Лев-скрипт
 
-Защото дяволите в ЕС могат да отнемат любимата ми валута, но не могат да отнемат
-любовта ми за него.
+Защото леа може вече да е изчезнал като валута, но не е изчезнал от моето сърце.
 
 Наръчникът описващ синтаксиса и стандартната библиотека на езика се намира
 [тук](https://momchil_kalestrov.gitlab.io/lev-script-docs/).
@@ -14,8 +13,7 @@
 
 # Lev-script
 
-Because the devils at the EU can take away my beloved currency, but they can
-never take way my love for it.
+Because the lev may be gone as our currency, but it's not gone from my heart.
 
 The documentation defining the syntax and standard library can be found
 [here](https://momchil_kalestrov.gitlab.io/lev-script-docs/en/).
