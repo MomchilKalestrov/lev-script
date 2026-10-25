@@ -47,19 +47,23 @@ export const repl = () => {
 
             process.stdin.off('keypress', handler);
             console.log(); // add a newline so the last thing printed doesn't get overwritten
-
             resolve();
-        })
+        });
 
         const context = new Context();
         
         core.forEach(([ key, object ]) => context.map.set(key, object));
 
         repl: while (true) {
-            let code = await get();
-            if (code[ code.length -1  ] !== ';') code += ';';
+            let code = (await get()).trim();
+
+            // this is to make it easier to write expressions, but as a byproduct
+            // it allows the last of multiple statements to just not have a semicolon
+            // :shrug:
+            if (code[ code.length - 1  ] !== ';') code += ';';
 
             const tokenStream = tokenize(code);
+
             const statements: Statement[] = [];
             while (tokenStream.current?.type !== 'EOF')
                 try {
