@@ -11,6 +11,8 @@ global.VERSION = '0.0.1';
 
 const [ , main, ...args ] = process.argv;
 
+process.removeAllListeners('warning'); // suppress the `ExperimentalWarning` when ran as an SEA
+
 (async () => {
     const printUsage = () => {
         console.log(`Usage: ${ path.basename(main) } [FILE] [OPTION]...`);
