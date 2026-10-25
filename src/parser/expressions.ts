@@ -195,7 +195,7 @@ const parsePrimaryExpression = (tokenStream: LexerTokenStream): Expression => {
                 name: token.value
             } satisfies Identifier;
         default:
-            throw new Error('GLHF');
+            throw new Error('Parse error: unexpected ' + tokenStream.current?.type);
     };
 };
 
@@ -280,7 +280,7 @@ export const parseExpression = (tokenStream: LexerTokenStream, minPrecedence: nu
                     left.type !== 'MemberExpression' &&
                     left.type !== 'IndexExpression'
                 )
-                    throw new Error(`Cannot assing a value to a ${ left.type }.`);
+                    throw new Error(`Parse error: cannot assing a value to a ${ left.type }.`);
                 tokenStream.consume('EQ');
 
                 left = {
